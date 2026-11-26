@@ -37,4 +37,10 @@ public class SaveManager {
             System.out.println("Warning: progress could not be saved.");
         }
     }
+
+    public static void reset() {
+        save(0, 0);
+    }
 }
+
+    

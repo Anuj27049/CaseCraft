@@ -29,6 +29,7 @@ public class Game {
             System.out.println("1. Start / Continue Game");
             System.out.println("2. Detective Profile");
             System.out.println("3. View Case List");
+            System.out.println("4. Reset Game Progress");
             System.out.println("0. Exit");
             int choice = readInt("Enter choice: ");
 
@@ -36,6 +37,7 @@ public class Game {
                 case 1 -> playCases();
                 case 2 -> showProfile();
                 case 3 -> showCases();
+                case 4 -> resetProgress();
                 case 0 -> running = false;
                 default -> System.out.println("Invalid choice.");
             }
@@ -43,14 +45,28 @@ public class Game {
         System.out.println("Thank you for playing CaseCraft.");
     }
 
+    
     private void playCases() {
         List<CaseData> cases = caseManager.getCases();
-        if (completedCases == cases.size()) {
-            System.out.println("You have completed all five cases!");
+
+        System.out.println("\nSELECT A CASE");
+
+        for (CaseData c : cases) {
+            String status = c.getNumber() <= completedCases ? "COMPLETED"
+                    : c.getNumber() == completedCases + 1 ? "UNLOCKED" : "LOCKED";
+
+            System.out.println(c.getNumber() + ". " + c.getTitle() + " - " + status);
+        }
+
+        int choice = readInt("Enter case number: ");
+
+        if (choice < 1 || choice > completedCases + 1 || choice > cases.size()) {
+            System.out.println("Invalid choice or case is locked.");
             return;
         }
 
-        CaseData current = cases.get(completedCases);
+        CaseData current = cases.get(choice - 1);
+
         System.out.println("\nCASE " + current.getNumber() + ": " + current.getTitle());
         System.out.println(current.getBriefing());
 
@@ -58,14 +74,20 @@ public class Game {
         int score = investigation.run();
 
         if (score >= 50) {
-            completedCases++;
-            totalScore += score;
-            SaveManager.save(completedCases, totalScore);
-            System.out.println("\nCase completed. The next case is now unlocked.");
+            if (choice == completedCases + 1) {
+                completedCases++;
+                totalScore += score;
+                SaveManager.save(completedCases, totalScore);
+
+                System.out.println("\nCase completed. The next case is now unlocked.");
+            } else {
+                System.out.println("\nCase replay completed. Your profile score remains unchanged.");
+            }
         } else {
             System.out.println("\nThe case remains unresolved. Review the clues and try again.");
         }
     }
+
 
     private void showProfile() {
         System.out.println("\nDETECTIVE PROFILE");
@@ -101,4 +123,24 @@ public class Game {
             }
         }
     }
+
+    private void resetProgress() {
+        System.out.println("\nRESET GAME PROGRESS?");
+        System.out.println("1. Yes");
+        System.out.println("2. No");
+
+        int choice = readInt("Enter choice: ");
+
+        if (choice == 1) {
+            completedCases = 0;
+            totalScore = 0;
+            SaveManager.reset();
+
+            System.out.println("Progress reset successfully!");
+        } else {
+            System.out.println("Reset cancelled.");
+        }
+    }
 }
+
+    
